@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Stuntcoders_Currency>
+            <version>0.1.0</version>
+        </Stuntcoders_Currency>
+    </modules>
+    <global>
+        <currency>
+            <import>
+                <services>
+                    <stuntcoders_currency_ecb>
+                        <name>European Central Bank</name>
+                        <model>Stuntcoders_Currency_Model_Ecb</model>
+                    </stuntcoders_currency_ecb>
+                </services>
+            </import>
+        </currency>
+    </global>
+</config>
