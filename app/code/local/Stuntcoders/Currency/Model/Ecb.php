@@ -2,19 +2,16 @@
 
 class Stuntcoders_Currency_Model_Ecb extends Mage_Directory_Model_Currency_Import_Abstract
 {
-    protected $_messages = array();
+    const RATES_XML_URL = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
-    public function getRatesXmlUrl()
-    {
-        return 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
-    }
+    protected $_messages = array();
 
     protected function _convert($currencyFrom, $currencyTo)
     {
         try {
-            $rates = simplexml_load_string(file_get_contents($this->getRatesXmlUrl()), null, LIBXML_NOERROR);
-            if ($rates) {
+            $rates = simplexml_load_string(file_get_contents(self::RATES_XML_URL), null, LIBXML_NOERROR);
 
+            if ($rates) {
                 $fromEurRate = 1;
                 $toEurRate = 1;
 
@@ -23,7 +20,6 @@ class Stuntcoders_Currency_Model_Ecb extends Mage_Directory_Model_Currency_Impor
                         $fromEurRate = (float) $node->attributes()->rate;
                     }
                 }
-
 
                 if ($nodes = $rates->xpath("//*[@currency='{$currencyTo}']")) {
                     if ($nodes && is_array($nodes) && ($node = reset($nodes))) {
