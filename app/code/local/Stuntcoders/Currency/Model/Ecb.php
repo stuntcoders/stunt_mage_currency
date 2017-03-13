@@ -6,34 +6,50 @@ class Stuntcoders_Currency_Model_Ecb extends Mage_Directory_Model_Currency_Impor
 
     protected $_messages = array();
 
+    /**
+     * @var SimpleXMLElement
+     */
+    protected $_rates;
+
+    /**
+     * @param   string $currencyFrom
+     * @param   string $currencyTo
+     * @return  float
+     */
     protected function _convert($currencyFrom, $currencyTo)
     {
         try {
-            $rates = simplexml_load_string(file_get_contents(self::RATES_XML_URL), null, LIBXML_NOERROR);
-
-            if ($rates) {
-                $fromEurRate = 1;
-                $toEurRate = 1;
-
-                if ($nodes = $rates->xpath("//*[@currency='{$currencyFrom}']")) {
-                    if ($nodes && is_array($nodes) && ($node = reset($nodes))) {
-                        $fromEurRate = (float) $node->attributes()->rate;
-                    }
-                }
-
-                if ($nodes = $rates->xpath("//*[@currency='{$currencyTo}']")) {
-                    if ($nodes && is_array($nodes) && ($node = reset($nodes))) {
-                        $toEurRate = (float) $node->attributes()->rate;
-                    }
-                }
-
-                return 1 / $fromEurRate * $toEurRate;
+            $this->_rates = $this->_fetchRates();
+            if ($this->_rates) {
+                return 1 / $this->_getRateFor($currencyFrom) * $this->_getRateFor($currencyTo);
             }
         } catch (Exception $e) {
             $this->_messages[] = Mage::helper('adminhtml')->__('Cannot retrieve rate from ECB.');
             Mage::logException($e);
         }
 
-        return false;
+        return 1.0;
+    }
+
+    /**
+     * @param string $currency
+     * @return float
+     */
+    protected function _getRateFor($currency)
+    {
+        $nodes = $this->_rates->xpath("//*[@currency='{$currency}']");
+        if (!is_array($nodes) || !($node = reset($nodes))) {
+            return 1.0;
+        }
+
+        return (float) $node->attributes()->rate;
+    }
+
+    /**
+     * @return SimpleXMLElement
+     */
+    protected function _fetchRates()
+    {
+        return simplexml_load_file(self::RATES_XML_URL, null, LIBXML_NOERROR);
     }
 }
